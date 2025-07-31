@@ -7,10 +7,10 @@ from google.cloud import bigquery
 # Streamlit Secretsből olvasod be a GCP kulcsot
 
 credentials = service_account.Credentials.from_service_account_info(
-    st.secrets["gcp_service_account"]
+    st.secrets["GCP_SERVICE_ACCOUNT_KEY"]
 )
 
-client = bigquery.Client(credentials=credentials, project=st.secrets["gcp_service_account"]["project_id"])
+client = bigquery.Client(credentials=credentials, project=st.secrets["GCP_SERVICE_ACCOUNT_KEY"]["project_id"])
 
 st.set_page_config(layout="wide")
 
