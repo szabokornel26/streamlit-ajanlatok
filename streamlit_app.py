@@ -5,12 +5,11 @@ from google.oauth2 import service_account
 from google.cloud import bigquery
 
 # Streamlit Secretsből olvasod be a GCP kulcsot
+gcp_key_json = st.secrets["GCP_SERVICE_ACCOUNT_KEY"]
+gcp_key_dict = json.loads(gcp_key_json)  # így lesz dict
 
-credentials = service_account.Credentials.from_service_account_info(
-    st.secrets["GCP_SERVICE_ACCOUNT_KEY"]
-)
-
-client = bigquery.Client(credentials=credentials, project=st.secrets["GCP_SERVICE_ACCOUNT_KEY"]["project_id"])
+credentials = service_account.Credentials.from_service_account_info(gcp_key_dict)
+client = bigquery.Client(credentials=credentials, project=gcp_key_dict["project_id"])
 
 st.set_page_config(layout="wide")
 
