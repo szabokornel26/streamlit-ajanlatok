@@ -45,11 +45,17 @@ def get_data():
     df = client.query(query).result().to_dataframe()
 
     # Egyedi azonosító generálása (projektnév 5. szóköz után vágva + ajánlatkérő)
-    def generate_azonosito(row):
-        nev = row["Projektnev"]
+def generate_azonosito(row):
+    nev = row["nev"]
+    if isinstance(nev, str):
         parts = nev.split(" ")
-        truncated_nev = " ".join(parts[:5])
-        return f"{truncated_nev} {row['Ajanlatkero']}" if pd.notnull(row["Ajanlatkero"]) else truncated_nev
+        if len(parts) >= 2:
+            return parts[0][:3].lower() + parts[1][:3].lower()
+        else:
+            return nev[:6].lower()
+    else:
+        return "ismeretlen"
+
 
     df["azonosito"] = df.apply(generate_azonosito, axis=1)
 
@@ -123,5 +129,6 @@ if check_password():
 
 else:
     st.stop()
+
 
 
