@@ -91,7 +91,7 @@ if check_password():
     df = get_data()
 
     # Szűrők
-    valasztott_ajanlatkero = st.multiselect("Ajánlatkérő(k):", options=df["Ajanlatkero"].dropna().unique())
+    valasztott_ajanlatkero = st.multiselect("Ajánlatkérő(k):", options=df["ajanlatkero"].dropna().unique())
 
     samsung_keres = st.text_input("Samsung_szam:")
     projektnev_szuro = st.text_input("Projektnev:")
@@ -131,6 +131,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
