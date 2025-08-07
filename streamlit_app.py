@@ -44,6 +44,8 @@ def get_data():
     """
     df = client.query(query).result().to_dataframe()
 
+print(df.columns.tolist())
+
     # Egyedi azonosító generálása (projektnév 5. szóköz után vágva + ajánlatkérő)
 def generate_azonosito(row):
     nev = row["nev"]
@@ -129,6 +131,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
