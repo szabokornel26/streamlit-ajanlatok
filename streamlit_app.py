@@ -50,10 +50,15 @@ def get_data():
 # Megjegyzések beszúrása
 
 # Upsert 1 sorra (MERGE) ---
-def upsert_megjegyzes(pjt_azonosito: str, megjegyzes: str | None):
+def upsert_megjegyzes(pjt_azonosito: str, megjegyzes):
+    if pd.isna(megjegyzes):
+        megjegyzes = None
+    else:
+        megjegyzes = str(megjegyzes)
+
     merge_sql = """
     MERGE `ajanlatok_dataset.megjegyzesek` T
-    USING (SELECT @azonositok AS pjt_azonosito, @megjegyzesek AS megjegyzes) S
+    USING (SELECT @pjt_azonosito AS pjt_azonosito, @megjegyzes AS megjegyzes) S
     ON T.pjt_azonosito = S.pjt_azonosito
     WHEN MATCHED THEN
       UPDATE SET megjegyzes = S.megjegyzes
@@ -63,10 +68,11 @@ def upsert_megjegyzes(pjt_azonosito: str, megjegyzes: str | None):
     job_config = bigquery.QueryJobConfig(
         query_parameters=[
             bigquery.ScalarQueryParameter("pjt_azonosito", "STRING", str(pjt_azonosito)),
-            bigquery.ScalarQueryParameter("megjegyzes", "STRING", None if megjegyzes == "" else megjegyzes),
+            bigquery.ScalarQueryParameter("megjegyzes", "STRING", megjegyzes),
         ]
     )
     client.query(merge_sql, job_config=job_config).result()
+
 
 # --- Tömeges mentés: csak a változott sorokat írjuk vissza ---
 def save_changes_bulk(original_df: pd.DataFrame, edited_df: pd.DataFrame):
@@ -155,6 +161,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
