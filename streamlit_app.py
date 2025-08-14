@@ -71,24 +71,25 @@ def upsert_megjegyzes(pjt_azonosito: str, megjegyzes):
 
 # --- Tömeges mentés: csak a változott sorokat írjuk vissza ---
 def save_changes_bulk(original_df: pd.DataFrame, edited_df: pd.DataFrame):
-    # indexeljünk kulccsal, és csak a Megjegyzes oszlopot hasonlítsuk
+    # csak a Megjegyzes oszlopot hasonlítsuk
     orig = original_df.set_index("Projekt_azonosito")["Megjegyzes"].fillna("")
     edit = edited_df.set_index("Projekt_azonosito")["Megjegyzes"].fillna("")
+
+    # logikai maszk a változott sorokra
     changed_mask = orig.ne(edit).fillna(False)
     changed_ids = edit.index[changed_mask].tolist()
 
-    if len(changed_ids) == 0:
+    if not changed_ids:
         st.info("Nincs mentendő változás.")
         return
 
-
-    # upsert soronként (tipikusan kevés lesz egyszerre)
+    # upsert soronként
     for pid in changed_ids:
+        # csak a string értéket adjuk át
         megjegyzes = edit.loc[pid]
-        if pd.isna(megjegyzes):
+        if pd.isna(megjegyzes) or megjegyzes == "":
             megjegyzes = None
-        upsert_megjegyzes(pid, megjegyzes)
-
+        upsert_megjegyzes(pid, str(megjegyzes) if megjegyzes is not None else None)
 
     st.success(f"Sikeres mentés: {len(changed_ids)} sor frissítve.")
 
@@ -160,6 +161,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
