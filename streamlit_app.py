@@ -36,13 +36,23 @@ def get_data():
         a.ajanlatkero AS Ajanlatkero,
         a.datum AS Ajanlatadas_datuma,
         a.keszito AS Keszito,
+        CONCAT(
+          REGEXP_EXTRACT(a.pjt_nev, r'^(\S+\s+\S+\s+\S+\s+\S+\s+\S+)'),
+          ' ',
+          a.ajanlatkero
+        ) AS Egyedi_azonosito,
         m.megjegyzesek AS Megjegyzes
     FROM
         `ajanlatok_dataset.projektlista` AS p
     LEFT JOIN
         `ajanlatok_dataset.ajanlatok` AS a ON p.azonosito = a.pjt_azonosito
     LEFT JOIN
-        `ajanlatok_dataset.megjegyzesek` AS m ON p.azonosito = m.azonositok
+        `ajanlatok_dataset.megjegyzesek` AS m
+        ON CONCAT(
+          REGEXP_EXTRACT(a.pjt_nev, r'^(\S+\s+\S+\s+\S+\s+\S+\s+\S+)'),
+          ' ',
+          a.ajanlatkero
+        ) = m.azonositok
     """
     df = client.query(query).result().to_dataframe()
     return df
@@ -163,3 +173,4 @@ if check_password():
 
 else:
     st.stop()
+
