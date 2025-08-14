@@ -118,7 +118,7 @@ if check_password():
     # --- TÁBLÁN BELÜLI SZERKESZTÉS ---
     # csak a Megjegyzes legyen szerkeszthető; a kulcs és többi oszlop zárolt
     edited_df = st.data_editor(
-        df_szurt_display,
+        df_szurt,
         use_container_width=True,
         hide_index=True,
         column_config={
@@ -153,4 +153,5 @@ if check_password():
 
 else:
     st.stop()
+
 
