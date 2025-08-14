@@ -51,19 +51,14 @@ def get_data():
 
 # Upsert 1 sorra (MERGE) ---
 def upsert_megjegyzes(pjt_azonosito: str, megjegyzes):
-    if pd.isna(megjegyzes):
-        megjegyzes = None
-    else:
-        megjegyzes = str(megjegyzes)
-
     merge_sql = """
     MERGE `ajanlatok_dataset.megjegyzesek` T
-    USING (SELECT @azonositok AS pjt_azonosito, @megjegyzesek AS megjegyzes) S
-    ON T.pjt_azonosito = S.pjt_azonosito
+    USING (SELECT @pjt_azonosito AS pjt_azonosito, @megjegyzes AS megjegyzes) S
+    ON T.azonositok = S.pjt_azonosito
     WHEN MATCHED THEN
-      UPDATE SET megjegyzes = S.megjegyzes
+      UPDATE SET megjegyzesek = S.megjegyzes
     WHEN NOT MATCHED THEN
-      INSERT (pjt_azonosito, megjegyzes) VALUES (S.pjt_azonosito, S.megjegyzes)
+      INSERT (azonositok, megjegyzesek) VALUES (S.pjt_azonosito, S.megjegyzes)
     """
     job_config = bigquery.QueryJobConfig(
         query_parameters=[
@@ -161,6 +156,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
