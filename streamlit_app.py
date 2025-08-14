@@ -42,7 +42,7 @@ def get_data():
     LEFT JOIN
         `ajanlatok_dataset.ajanlatok` AS a ON p.azonosito = a.pjt_azonosito
     LEFT JOIN
-        `ajanlatok_dataset.megjegyzesek` AS m ON p.azonosito = m.pjt_azonosito
+        `ajanlatok_dataset.megjegyzesek` AS m ON p.azonosito = m.azonositok
     """
     df = client.query(query).result().to_dataframe()
     return df
@@ -110,4 +110,5 @@ if check_password():
 
 else:
     st.stop()
+
 
