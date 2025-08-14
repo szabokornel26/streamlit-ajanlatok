@@ -56,7 +56,7 @@ def upsert_megjegyzes(pjt_azonosito: str, megjegyzes):
     else:
         megjegyzes = str(megjegyzes)
 
-   merge_sql = """
+    merge_sql = """
     MERGE `ajanlatok_dataset.megjegyzesek` T
     USING (SELECT @azonositok AS pjt_azonosito, @megjegyzesek AS megjegyzes) S
     ON T.pjt_azonosito = S.pjt_azonosito
@@ -161,6 +161,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
