@@ -36,7 +36,7 @@ def get_data():
         a.ajanlatkero AS Ajanlatkero,
         a.datum AS Ajanlatadas_datuma,
         a.keszito AS Keszito,
-        m.megjegyzes AS Megjegyzes
+        m.megjegyzesek AS Megjegyzes
     FROM
         `ajanlatok_dataset.projektlista` AS p
     LEFT JOIN
@@ -110,5 +110,6 @@ if check_password():
 
 else:
     st.stop()
+
 
 
