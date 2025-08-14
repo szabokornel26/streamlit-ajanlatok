@@ -163,7 +163,7 @@ if check_password():
         },
     )
 
-    if st.button("Változtatások mentése BigQuery-be"):
+    if st.button("Megjegyzések mentése"):
         df_for_compare = df_szurt.copy()
         edited_for_save = edited_df.copy()
 
@@ -175,6 +175,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
