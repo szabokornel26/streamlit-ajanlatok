@@ -137,6 +137,8 @@ if check_password():
     if projektnev_szuro:
         df_szurt = df_szurt[df_szurt["Projektnev"].str.contains(projektnev_szuro, case=False, na=False)]
 
+    df_szurt = df_szurt.sort_values(by="Ajanlatadas_datuma", ascending=True, na_position="last")
+    
     df_szurt["Vegosszeg"] = df_szurt["Vegosszeg"].apply(
         lambda x: f"{int(x):,}".replace(",", " ") if pd.notnull(x) else "-"
     )
@@ -173,4 +175,5 @@ if check_password():
 
 else:
     st.stop()
+
 
