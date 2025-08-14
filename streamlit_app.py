@@ -47,59 +47,71 @@ def get_data():
     df = client.query(query).result().to_dataframe()
     return df
 
-# Megjegyzések beszúrása
+# <<< VÁLTOZOTT: Új függvény az egyedi kulcs előállítására
+def generate_unique_id(projektnev: str, ajanlatkero: str) -> str:
+    if pd.isna(projektnev):
+        projektnev = ""
+    if pd.isna(ajanlatkero):
+        ajanlatkero = ""
+    parts = projektnev.split(" ")
+    truncated = " ".join(parts[:5])  # első 5 "szó" megtartása
+    return f"{truncated} {ajanlatkero}".strip()
 
-# Upsert 1 sorra (MERGE) ---
-def upsert_megjegyzes(pjt_azonosito: str, megjegyzes):
+# BigQuery upsert
+def upsert_megjegyzes(egyedi_azon: str, megjegyzes):
     merge_sql = """
     MERGE `ajanlatok_dataset.megjegyzesek` T
-    USING (SELECT @pjt_azonosito AS pjt_azonosito, @megjegyzes AS megjegyzes) S
-    ON T.azonositok = S.pjt_azonosito
+    USING (SELECT @egyedi_azon AS egyedi_azon, @megjegyzes AS megjegyzes) S
+    ON T.azonositok = S.egyedi_azon
     WHEN MATCHED THEN
       UPDATE SET megjegyzesek = S.megjegyzes
     WHEN NOT MATCHED THEN
-      INSERT (azonositok, megjegyzesek) VALUES (S.pjt_azonosito, S.megjegyzes)
+      INSERT (azonositok, megjegyzesek) VALUES (S.egyedi_azon, S.megjegyzes)
     """
     job_config = bigquery.QueryJobConfig(
         query_parameters=[
-            bigquery.ScalarQueryParameter("pjt_azonosito", "STRING", str(pjt_azonosito)),
+            bigquery.ScalarQueryParameter("egyedi_azon", "STRING", str(egyedi_azon)),
             bigquery.ScalarQueryParameter("megjegyzes", "STRING", megjegyzes),
         ]
     )
     client.query(merge_sql, job_config=job_config).result()
 
-
-# --- Tömeges mentés: csak a változott sorokat írjuk vissza ---
+# <<< VÁLTOZOTT: save_changes_bulk most az Egyedi_azonosito alapján dolgozik
 def save_changes_bulk(original_df: pd.DataFrame, edited_df: pd.DataFrame):
-    # csak a Megjegyzes oszlopot hasonlítsuk
-    orig = original_df.set_index("Projekt_azonosito")["Megjegyzes"].fillna("")
-    edit = edited_df.set_index("Projekt_azonosito")["Megjegyzes"].fillna("")
+    key_col = "Egyedi_azonosito"
 
-    # logikai maszk a változott sorokra
-    changed_mask = orig.ne(edit).fillna(False)
-    changed_ids = edit.index[changed_mask].tolist()
+    original_df = original_df[[key_col, "Megjegyzes"]].drop_duplicates(subset=[key_col], keep="last")
+    edited_df = edited_df[[key_col, "Megjegyzes"]].drop_duplicates(subset=[key_col], keep="last")
+
+    orig = original_df.set_index(key_col)["Megjegyzes"].fillna("")
+    edit = edited_df.set_index(key_col)["Megjegyzes"].fillna("")
+
+    changed_mask = orig.ne(edit)
+    changed_ids = orig.index[changed_mask].tolist()
 
     if not changed_ids:
         st.info("Nincs mentendő változás.")
         return
 
-    # upsert soronként
-    for pid in changed_ids:
-        # csak a string értéket adjuk át
-        megjegyzes = edit.loc[pid]
-        if pd.isna(megjegyzes) or megjegyzes == "":
-            megjegyzes = None
-        upsert_megjegyzes(pid, str(megjegyzes) if megjegyzes is not None else None)
+    for key in changed_ids:
+        val = edit.loc[key]
+        val = None if pd.isna(val) or val == "" else str(val)
+        upsert_megjegyzes(key, val)
 
     st.success(f"Sikeres mentés: {len(changed_ids)} sor frissítve.")
 
 if check_password():
     st.title("Kimenő ajánlatok")
-
         
     df = get_data()
 
-    # Szűrők létrehozása
+    # <<< VÁLTOZOTT: Új oszlop hozzáadása azonnal lekérdezés után
+    df["Egyedi_azonosito"] = df.apply(
+        lambda row: generate_unique_id(row["Projektnev"], row["Ajanlatkero"]),
+        axis=1
+    )
+
+    # Szűrők
     valasztott_ajanlatkero = st.multiselect("Ajánlatkérő(k):", options=df["Ajanlatkero"].unique(), default=None)
     samsung_keres = st.text_input("Samsung_szam:")
     projektnev_szuro = st.text_input("Projektnev:")
@@ -115,22 +127,19 @@ if check_password():
     if projektnev_szuro:
         df_szurt = df_szurt[df_szurt["Projektnev"].str.contains(projektnev_szuro, case=False, na=False)]
 
-    # Végösszeg oszlop formázása
     df_szurt["Vegosszeg"] = df_szurt["Vegosszeg"].apply(
         lambda x: f"{int(x):,}".replace(",", " ") if pd.notnull(x) else "-"
     )
 
-    # Megjelenítés és találtszám jelzés
     st.write(f"Találatok száma: {len(df_szurt)}")
 
-    # --- TÁBLÁN BELÜLI SZERKESZTÉS ---
-    # csak a Megjegyzes legyen szerkeszthető; a kulcs és többi oszlop zárolt
     edited_df = st.data_editor(
         df_szurt,
         use_container_width=True,
         hide_index=True,
         column_config={
-            "Projekt_azonosito": st.column_config.TextColumn("Projekt azonosító", help="Belső azonosító", disabled=True),
+            "Egyedi_azonosito": st.column_config.TextColumn("Egyedi azonosító", disabled=True),  # <<< VÁLTOZOTT
+            "Projekt_azonosito": st.column_config.TextColumn("Projekt azonosító", disabled=True),
             "Samsung_szam": st.column_config.TextColumn("Samsung szám", disabled=True),
             "Felelos": st.column_config.TextColumn("Felelős", disabled=True),
             "Projektnev": st.column_config.TextColumn("Projekt név", disabled=True),
@@ -142,33 +151,15 @@ if check_password():
         },
     )
 
-    # --- Mentés gomb: csak megváltozott Megjegyzes értékeket írjuk vissza ---
     if st.button("Változtatások mentése BigQuery-be"):
-        # FIGYELEM: a mentéshez az eredeti (nem formázott) df_szurt kell, hogy pontosan hasonlítsunk!
-        # ezért visszarakjuk a szerkesztett Megjegyzes oszlopot a nem formázott df_szurt-ra
         df_for_compare = df_szurt.copy()
-        df_for_compare = df_for_compare[["Projekt_azonosito", "Megjegyzes"]].copy()
-
         edited_for_save = edited_df.copy()
-        edited_for_save = edited_for_save[["Projekt_azonosito", "Megjegyzes"]].copy()
 
         try:
             save_changes_bulk(df_for_compare, edited_for_save)
-            # opcionálisan frissítés
             st.rerun()
         except Exception as e:
             st.error(f"Hiba mentés közben: {e}")
 
 else:
     st.stop()
-
-
-
-
-
-
-
-
-
-
-
