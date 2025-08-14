@@ -73,11 +73,13 @@ def save_changes_bulk(original_df: pd.DataFrame, edited_df: pd.DataFrame):
     # indexeljünk kulccsal, és csak a Megjegyzes oszlopot hasonlítsuk
     orig = original_df.set_index("Projekt_azonosito")["Megjegyzes"].fillna("")
     edit = edited_df.set_index("Projekt_azonosito")["Megjegyzes"].fillna("")
-    changed_mask = orig.ne(edit)
+    changed_mask = orig.ne(edit).fillna(False)
     changed_ids = edit.index[changed_mask].tolist()
-    if not changed_ids:
+
+    if len(changed_ids) == 0:
         st.info("Nincs mentendő változás.")
         return
+
 
     # upsert soronként (tipikusan kevés lesz egyszerre)
     for pid in changed_ids:
@@ -153,5 +155,6 @@ if check_password():
 
 else:
     st.stop()
+
 
 
