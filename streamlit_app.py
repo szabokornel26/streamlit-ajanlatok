@@ -83,10 +83,10 @@ def save_changes_bulk(original_df: pd.DataFrame, edited_df: pd.DataFrame):
 
 
     # upsert soronként (tipikusan kevés lesz egyszerre)
-   for pid in changed_ids:
-       megjegyzes = edit.loc[pid]
-       if pd.isna(megjegyzes):
-           megjegyzes = None
+    for pid in changed_ids:
+        megjegyzes = edit.loc[pid]
+        if pd.isna(megjegyzes):
+            megjegyzes = None
         upsert_megjegyzes(pid, megjegyzes)
 
 
@@ -160,6 +160,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
