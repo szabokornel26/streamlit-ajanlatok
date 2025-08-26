@@ -100,7 +100,7 @@ def save_changes_bulk(original_df: pd.DataFrame, edited_df: pd.DataFrame):
     changed_ids = orig.index[changed_mask].tolist()
 
     if not changed_ids:
-        st.info("Nincs mentendő változás.")
+        st.info("Nincs mentendő változás (Az egyedi azonosító hiányozhat).")
         return
 
     for key in changed_ids:
@@ -175,6 +175,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
