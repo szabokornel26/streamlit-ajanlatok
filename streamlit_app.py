@@ -160,14 +160,15 @@ if check_password():
     if isinstance(datum_intervallum, list) and len(datum_intervallum) == 2:
         start_date, end_date = datum_intervallum
         df_szurt = df_szurt[
-            (pd.to_datetime(df_szurt["Ajanlatadas_datuma"]).dt.date >= start_date) &
-            (pd.to_datetime(df_szurt["Ajanlatadas_datuma"]).dt.date <= end_date)
+            (df_szurt["Ajanlatadas_datuma"].dt.date >= start_date) &
+            (df_szurt["Ajanlatadas_datuma"].dt.date <= end_date)
         ]
-        
-    elif not isinstance(datum_intervallum, list):
+    else:
+        # ha csak egy napot adott meg
         df_szurt = df_szurt[
-            pd.to_datetime(df_szurt["Ajanlatadas_datuma"]).dt.date == datum_intervallum
+            df_szurt["Ajanlatadas_datuma"].dt.date == datum_intervallum
         ]
+
     
     df_szurt = df_szurt.sort_values(by="Ajanlatadas_datuma", ascending=True, na_position="first")
     
@@ -207,6 +208,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
