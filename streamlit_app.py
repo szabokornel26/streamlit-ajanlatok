@@ -125,9 +125,13 @@ if check_password():
     valasztott_ajanlatkero = st.multiselect("Ajánlatkérő(k):", options=df["Ajanlatkero"].unique(), default=None)
     samsung_keres = st.text_input("Samsung_szam:")
     projektnev_szuro = st.text_input("Projektnev:")
+    valasztott_keszito = st.multiselect("Készítő(k):", options=df["Keszito"].unique(), default=None)
 
     df_szurt = df.copy()
 
+    if valasztott_keszito:
+        df_szurt = df_szurt[df_szurt["Keszito"].isin(valasztott_keszito)]
+    
     if valasztott_ajanlatkero:
         df_szurt = df_szurt[df_szurt["Ajanlatkero"].isin(valasztott_ajanlatkero)]
 
@@ -175,6 +179,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
