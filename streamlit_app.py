@@ -123,8 +123,8 @@ if check_password():
 
     # Szűrők
     valasztott_ajanlatkero = st.multiselect("Ajánlatkérő(k):", options=df["Ajanlatkero"].unique(), default=None)
-    samsung_keres = st.text_input("Samsung_szam:")
-    projektnev_szuro = st.text_input("Projektnev:")
+    samsung_keres = st.text_input("Samsung szám:")
+    projektnev_szuro = st.text_input("Projektnév:")
     valasztott_keszito = st.multiselect("Készítő(k):", options=df["Keszito"].unique(), default=None)
 
     df_szurt = df.copy()
@@ -179,3 +179,4 @@ if check_password():
 
 else:
     st.stop()
+
