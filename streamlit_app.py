@@ -127,22 +127,6 @@ if check_password():
     projektnev_szuro = st.text_input("Projektnev:")
     valasztott_keszito = st.multiselect("Készítő(k):", options=df["Keszito"].unique(), default=None)
 
-    # Ajanlatadas_datuma oszlopot biztosan datetime-ra alakítjuk
-    df["Ajanlatadas_datuma"] = pd.to_datetime(df["Ajanlatadas_datuma"], errors="coerce")
-    
-    # Csak a nem NaT értékekből vesszük a min/max dátumot
-    min_date = df["Ajanlatadas_datuma"].dropna().min().date()
-    max_date = df["Ajanlatadas_datuma"].dropna().max().date()
-
-    
-    datum_intervallum = st.date_input(
-        "Ajánlatadás dátum (intervallum vagy konkrét nap):",
-        value=[min_date, max_date],
-        min_value=min_date,
-        max_value=max_date
-    )
-
-    
     df_szurt = df.copy()
 
     if valasztott_keszito:
@@ -157,19 +141,6 @@ if check_password():
     if projektnev_szuro:
         df_szurt = df_szurt[df_szurt["Projektnev"].str.contains(projektnev_szuro, case=False, na=False)]
 
-    if isinstance(datum_intervallum, list) and len(datum_intervallum) == 2:
-        start_date, end_date = datum_intervallum
-        df_szurt = df_szurt[
-            (df_szurt["Ajanlatadas_datuma"].dt.date >= start_date) &
-            (df_szurt["Ajanlatadas_datuma"].dt.date <= end_date)
-        ]
-    else:
-        # ha csak egy napot adott meg
-        df_szurt = df_szurt[
-            df_szurt["Ajanlatadas_datuma"].dt.date == datum_intervallum
-        ]
-
-    
     df_szurt = df_szurt.sort_values(by="Ajanlatadas_datuma", ascending=True, na_position="first")
     
     df_szurt["Vegosszeg"] = df_szurt["Vegosszeg"].apply(
@@ -208,13 +179,3 @@ if check_password():
 
 else:
     st.stop()
-
-
-
-
-
-
-
-
-
-
