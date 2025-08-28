@@ -127,9 +127,13 @@ if check_password():
     projektnev_szuro = st.text_input("Projektnev:")
     valasztott_keszito = st.multiselect("Készítő(k):", options=df["Keszito"].unique(), default=None)
 
-    # Dátum szűrő
-    min_date = pd.to_datetime(df["Ajanlatadas_datuma"].min()).date()
-    max_date = pd.to_datetime(df["Ajanlatadas_datuma"].max()).date()
+    # Ajanlatadas_datuma oszlopot biztosan datetime-ra alakítjuk
+    df["Ajanlatadas_datuma"] = pd.to_datetime(df["Ajanlatadas_datuma"], errors="coerce")
+    
+    # Csak a nem NaT értékekből vesszük a min/max dátumot
+    min_date = df["Ajanlatadas_datuma"].dropna().min().date()
+    max_date = df["Ajanlatadas_datuma"].dropna().max().date()
+
     
     datum_intervallum = st.date_input(
         "Ajánlatadás dátum (intervallum vagy konkrét nap):",
@@ -203,6 +207,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
