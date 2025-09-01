@@ -1,21 +1,39 @@
-# Könyvtárak importálása
+# --- Module Purpose ---
+# This application is a quotation tracking tool that:
+# - retrieves quotation data from Google BigQuery,
+# - allows users to add or update notes,
+# - and saves changes back to BigQuery using an upsert logic.
+
 import streamlit as st
 import pandas as pd
 import json
 from google.oauth2 import service_account
 from google.cloud import bigquery
 
-# GCP kulcs beolvasása Secretsből
+# --- Authentication Setup ---
+# Load service account credentials from Streamlit secrets
+# and initialize the BigQuery client.
+
 gcp_key_json = st.secrets["GCP_SERVICE_ACCOUNT_KEY"]
 gcp_key_dict = json.loads(gcp_key_json) 
-
 credentials = service_account.Credentials.from_service_account_info(gcp_key_dict)
 client = bigquery.Client(credentials=credentials, project=gcp_key_dict["project_id"])
 
+# --- Streamlit Page Configuration ---
+# Configure the layout to use full width for better readability.
+
 st.set_page_config(layout="wide")
 
-# Jelszó beolvasása Secretsből
+# --- Simple Password Protection ---
+# Require the user to enter the correct password in the sidebar
+# before accessing the application.
+
 PASSWORD = st.secrets["PASSWORD"]
+
+# --- Password Check Function ---
+# Displays a password input field in the sidebar.
+# If the entered password does not match the stored one,
+# an error message is shown and access is denied.
 
 def check_password():
     pwd = st.sidebar.text_input("Jelszó:", type="password")
@@ -24,7 +42,13 @@ def check_password():
         return False
     return True
 
-# BigQuery adatok lekérése
+# --- Retrieve Data from BigQuery ---
+# Executes a SQL query that joins multiple tables:
+# - project list
+# - quotations
+# - notes
+# It returns the result as a Pandas DataFrame for further processing.
+
 def get_data():
     query = """
     SELECT
@@ -57,7 +81,12 @@ def get_data():
     df = client.query(query).result().to_dataframe()
     return df
 
-# <<< VÁLTOZOTT: Új függvény az egyedi kulcs előállítására
+# --- Unique Identifier Generator ---
+# Creates a reproducible key for each quotation by:
+# - taking the first 5 words of the project name,
+# - appending the client name.
+# Used to match quotations with notes across tables.
+
 def generate_unique_id(projektnev: str, ajanlatkero: str) -> str:
     if pd.isna(projektnev):
         projektnev = ""
@@ -67,7 +96,10 @@ def generate_unique_id(projektnev: str, ajanlatkero: str) -> str:
     truncated = " ".join(parts[:5])  # első 5 "szó" megtartása
     return f"{truncated} {ajanlatkero}".strip()
 
-# BigQuery upsert
+# --- BigQuery Upsert for Notes ---
+# Inserts or updates a note in the 'megjegyzesek' table.
+# Uses MERGE to update if the record exists, or insert if not.
+
 def upsert_megjegyzes(egyedi_azon: str, megjegyzes):
     merge_sql = """
     MERGE `ajanlatok_dataset.megjegyzesek` T
@@ -86,16 +118,31 @@ def upsert_megjegyzes(egyedi_azon: str, megjegyzes):
     )
     client.query(merge_sql, job_config=job_config).result()
 
-# <<< VÁLTOZOTT: save_changes_bulk most az Egyedi_azonosito alapján dolgozik
+# --- Save Notes in Bulk ---
+# Compares the original DataFrame with the edited DataFrame
+# based on the unique identifier column ("Egyedi_azonosito").
+# Detects changes in the 'Megjegyzes' column only.
+# For each modified row:
+#   - If a note was added or updated, it calls the upsert function.
+#   - If no changes are detected, no database operation is performed.
+
 def save_changes_bulk(original_df: pd.DataFrame, edited_df: pd.DataFrame):
     key_col = "Egyedi_azonosito"
 
+    # Keep only the unique identifier and the 'Megjegyzes' column,
+    # ensuring duplicates are removed to avoid conflicting updates.
+    
     original_df = original_df[[key_col, "Megjegyzes"]].drop_duplicates(subset=[key_col], keep="last")
     edited_df = edited_df[[key_col, "Megjegyzes"]].drop_duplicates(subset=[key_col], keep="last")
 
+    # Create Series indexed by the unique ID for both original and edited data.
+    # Replace NaN values with empty strings to ensure proper comparison.
+    
     orig = original_df.set_index(key_col)["Megjegyzes"].fillna("")
     edit = edited_df.set_index(key_col)["Megjegyzes"].fillna("")
 
+    # Identify rows where the note text has changed.
+    
     changed_mask = orig.ne(edit)
     changed_ids = orig.index[changed_mask].tolist()
 
@@ -103,6 +150,8 @@ def save_changes_bulk(original_df: pd.DataFrame, edited_df: pd.DataFrame):
         st.info("Nincs mentendő változás (Az egyedi azonosító hiányozhat).")
         return
 
+    # Loop through all modified rows and upsert each note into BigQuery.
+    
     for key in changed_ids:
         val = edit.loc[key]
         val = None if pd.isna(val) or val == "" else str(val)
@@ -110,25 +159,43 @@ def save_changes_bulk(original_df: pd.DataFrame, edited_df: pd.DataFrame):
 
     st.success(f"Sikeres mentés: {len(changed_ids)} sor frissítve.")
 
+# --- Main Streamlit Interface ---
+# Only displayed if the user enters the correct password.
+# Loads the quotation data and sets up filters and editable table.
+
 if check_password():
     st.title("Kimenő ajánlatok")
-        
+
+    # Retrieve all quotation data from BigQuery.
+    
     df = get_data()
 
-    # <<< VÁLTOZOTT: Új oszlop hozzáadása azonnal lekérdezés után
+    # Generate a unique identifier for each row immediately after data retrieval.
+    # This will be used to match notes with quotations.
+    
     df["Egyedi_azonosito"] = df.apply(
         lambda row: generate_unique_id(row["Projektnev"], row["Ajanlatkero"]),
         axis=1
     )
 
-    # Szűrők
+    # --- Filters ---
+    # Allow the user to filter quotations by:
+    # - client(s)
+    # - Samsung number
+    # - project name
+    # - creator(s)
+    
     valasztott_ajanlatkero = st.multiselect("Ajánlatkérő(k):", options=df["Ajanlatkero"].unique(), default=None)
     samsung_keres = st.text_input("Samsung szám:")
     projektnev_szuro = st.text_input("Projektnév:")
     valasztott_keszito = st.multiselect("Készítő(k):", options=df["Keszito"].unique(), default=None)
 
+    # Create a filtered DataFrame to apply user-selected filters.
+    
     df_szurt = df.copy()
 
+    # Apply each filter conditionally if the user has selected any options.
+    
     if valasztott_keszito:
         df_szurt = df_szurt[df_szurt["Keszito"].isin(valasztott_keszito)]
     
@@ -141,14 +208,27 @@ if check_password():
     if projektnev_szuro:
         df_szurt = df_szurt[df_szurt["Projektnev"].str.contains(projektnev_szuro, case=False, na=False)]
 
+    # Sort the filtered DataFrame by quotation date ascending.
+    # Null dates are placed first.
+    
     df_szurt = df_szurt.sort_values(by="Ajanlatadas_datuma", ascending=True, na_position="first")
+
+    # Format the 'Vegosszeg' column for display:
+    # - Add thousands separator
+    # - Show '-' for missing values
     
     df_szurt["Vegosszeg"] = df_szurt["Vegosszeg"].apply(
         lambda x: f"{int(x):,}".replace(",", " ") if pd.notnull(x) else "-"
     )
 
+    # Display the total number of filtered results.
+    
     st.write(f"Találatok száma: {len(df_szurt)}")
 
+    # --- Editable Table ---
+    # Use Streamlit's data_editor to allow editing of the 'Megjegyzes' column.
+    # All other columns are read-only.
+    
     edited_df = st.data_editor(
         df_szurt,
         use_container_width=True,
@@ -167,6 +247,11 @@ if check_password():
         },
     )
 
+    # --- Save Button ---
+    # When clicked, compare edited data with original,
+    # and save changes to BigQuery using the bulk save function.
+    # If an error occurs during saving, display an error message.
+    
     if st.button("Megjegyzések mentése"):
         df_for_compare = df_szurt.copy()
         edited_for_save = edited_df.copy()
@@ -177,6 +262,9 @@ if check_password():
         except Exception as e:
             st.error(f"Hiba mentés közben: {e}")
 
+# Stop execution if the password check failed.
+
 else:
     st.stop()
+
 
