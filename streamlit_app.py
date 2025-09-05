@@ -93,7 +93,7 @@ def generate_unique_id(projektnev: str, ajanlatkero: str) -> str:
     if pd.isna(ajanlatkero):
         ajanlatkero = ""
     parts = projektnev.split(" ")
-    truncated = " ".join(parts[:5])  # első 5 "szó" megtartása
+    truncated = " ".join(parts[:5])  # Keep first 5 word
     return f"{truncated} {ajanlatkero}".strip()
 
 # --- BigQuery Upsert for Notes ---
@@ -234,7 +234,7 @@ if check_password():
         use_container_width=True,
         hide_index=True,
         column_config={
-            "Egyedi_azonosito": st.column_config.TextColumn("Egyedi azonosító", disabled=True),  # <<< VÁLTOZOTT
+            "Egyedi_azonosito": st.column_config.TextColumn("Egyedi azonosító", disabled=True), 
             "Projekt_azonosito": st.column_config.TextColumn("Projekt azonosító", disabled=True),
             "Samsung_szam": st.column_config.TextColumn("Samsung szám", disabled=True),
             "Felelos": st.column_config.TextColumn("Felelős", disabled=True),
@@ -243,7 +243,7 @@ if check_password():
             "Ajanlatkero": st.column_config.TextColumn("Ajánlatkérő", disabled=True),
             "Ajanlatadas_datuma": st.column_config.DatetimeColumn("Ajánlatadás dátuma", disabled=True),
             "Keszito": st.column_config.TextColumn("Készítő", disabled=True),
-            "Megjegyzes": st.column_config.TextColumn("Megjegyzés", help="Szerkeszthető mező"),
+            "Megjegyzes": st.column_config.TextColumn("Megjegyzés", help="Szerkeszthető mező, csak ahol létezik egyedi azonosító"),
         },
     )
 
@@ -266,5 +266,6 @@ if check_password():
 
 else:
     st.stop()
+
 
 
