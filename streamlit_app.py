@@ -37,9 +37,13 @@ PASSWORD = st.secrets["PASSWORD"]
 
 def check_password():
     pwd = st.sidebar.text_input("Jelszó:", type="password")
-    if pwd != PASSWORD:
-        st.error("Hibás jelszó!")
+    empty_space = ""
+    if pwd == empty_space:
+        st.info("Írd be a jelszót")
         return False
+        elif pwd != PASSWORD:
+            st.error("Hibás jelszó!")
+            return False
     return True
 
 # --- Retrieve Data from BigQuery ---
@@ -266,6 +270,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
