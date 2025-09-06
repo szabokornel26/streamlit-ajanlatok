@@ -39,7 +39,7 @@ def check_password():
     pwd = st.sidebar.text_input("Jelszó:", type="password")
     empty_space = ""
     if pwd == empty_space:
-        st.info("Írd be a jelszót")
+        st.info("Írd be a jelszót!")
         return False
     elif pwd != PASSWORD:
         st.error("Hibás jelszó!")
@@ -270,6 +270,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
