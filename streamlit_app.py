@@ -41,9 +41,9 @@ def check_password():
     if pwd == empty_space:
         st.info("Írd be a jelszót")
         return False
-        elif pwd != PASSWORD:
-            st.error("Hibás jelszó!")
-            return False
+    elif pwd != PASSWORD:
+        st.error("Hibás jelszó!")
+        return False
     return True
 
 # --- Retrieve Data from BigQuery ---
@@ -270,6 +270,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
