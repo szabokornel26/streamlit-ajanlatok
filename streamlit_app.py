@@ -245,7 +245,7 @@ if check_password():
             "Projektnev": st.column_config.TextColumn("Projekt név", disabled=True),
             "Vegosszeg": st.column_config.TextColumn("Végösszeg (HUF)", disabled=True),
             "Ajanlatkero": st.column_config.TextColumn("Ajánlatkérő", disabled=True),
-            "Ajanlatadas_datuma": st.column_config.DatetimeColumn("Ajánlatadás dátuma", disabled=True),
+            "Ajanlatadas_datuma": st.column_config.DateColumn("Ajánlatadás dátuma", disabled=True),
             "Keszito": st.column_config.TextColumn("Készítő", disabled=True),
             "Megjegyzes": st.column_config.TextColumn("Megjegyzés", help="Szerkeszthető mező, csak ahol létezik egyedi azonosító"),
         },
@@ -270,6 +270,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
