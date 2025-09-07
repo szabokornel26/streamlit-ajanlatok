@@ -193,7 +193,8 @@ if check_password():
     samsung_keres = st.text_input("Samsung szám:")
     projektnev_szuro = st.text_input("Projektnév:")
     valasztott_keszito = st.multiselect("Készítő(k):", options=df["Keszito"].unique(), default=None)
-
+    datum_szuro = st.date_input("Ajánlatadás dátum szűrő:", value=None)
+    
     # Create a filtered DataFrame to apply user-selected filters.
     
     df_szurt = df.copy()
@@ -212,6 +213,16 @@ if check_password():
     if projektnev_szuro:
         df_szurt = df_szurt[df_szurt["Projektnev"].str.contains(projektnev_szuro, case=False, na=False)]
 
+    if datum_szuro:
+        if isinstance(datum_szuro, tuple) and len(datum_szuro) == 2:
+            start, end = datum_szuro
+            df_szurt = df_szurt[
+                (df_szurt["Ajanlatadas_datuma"].dt.date >= start) & 
+                (df_szurt["Ajanlatadas_datuma"].dt.date <= end)
+            ]
+        else:
+            df_szurt = df_szurt[df_szurt["Ajanlatadas_datuma"].dt.date == datum_szuro]
+    
     # Sort the filtered DataFrame by quotation date ascending.
     # Null dates are placed first.
     
@@ -270,6 +281,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
