@@ -215,7 +215,7 @@ if check_password():
     # Sort the filtered DataFrame by quotation date ascending.
     # Null dates are placed first.
     
-    df_szurt = df_szurt.sort_values(by="Ajanlatadas_datuma", ascending=True, na_position="first")
+    df_szurt = df_szurt.sort_values(by="Ajanlatadas_datuma", ascending=False, na_position="last")
 
     # Format the 'Vegosszeg' column for display:
     # - Add thousands separator
@@ -270,6 +270,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
