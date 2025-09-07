@@ -203,8 +203,8 @@ if check_password():
     
     
     datum_szuro = st.date_input(
-        "Ajánlatadás dátum szűrő (egy nap vagy intervallum):",
-        value=(min_date, max_date),  # tuple -> alapból intervallum
+        "Ajánlatadás dátum szűrő:",
+        value=(min_date, max_date),  # tuple -> interval
         min_value=min_date,
         max_value=max_date
     )
@@ -299,6 +299,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
