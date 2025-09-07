@@ -196,7 +196,18 @@ if check_password():
     samsung_keres = st.text_input("Samsung szám:")
     projektnev_szuro = st.text_input("Projektnév:")
     valasztott_keszito = st.multiselect("Készítő(k):", options=df["Keszito"].unique(), default=None)
-    datum_szuro = st.date_input("Dátum szűrő (egy nap vagy intervallum)")
+
+    
+    min_date = df["Ajanlatadas_datuma"].min().date()
+    max_date = df["Ajanlatadas_datuma"].max().date()
+    
+    
+    datum_szuro = st.date_input(
+        "Ajánlatadás dátum szűrő (egy nap vagy intervallum):",
+        value=(min_date, max_date),  # tuple -> alapból intervallum
+        min_value=min_date,
+        max_value=max_date
+    )
     
     # Create a filtered DataFrame to apply user-selected filters.
     
@@ -219,15 +230,15 @@ if check_password():
     import datetime
 
     if datum_szuro:
-        if isinstance(datum_szuro, list) and len(datum_szuro) == 2:
-            # Interval
-            kezd, veg = datum_szuro
+
+        if isinstance(datum_szuro, (list, tuple)) and len(datum_szuro) == 2:
+            start, end = datum_szuro
             df_szurt = df_szurt[
-                (df_szurt["Ajanlatadas_datuma"].dt.date >= kezd) &
-                (df_szurt["Ajanlatadas_datuma"].dt.date <= veg)
+                (df_szurt["Ajanlatadas_datuma"].dt.date >= start) &
+                (df_szurt["Ajanlatadas_datuma"].dt.date <= end)
             ]
-        elif isinstance(datum_szuro, (pd.Timestamp, datetime.date)):
-            # Specific date
+        else:
+
             df_szurt = df_szurt[df_szurt["Ajanlatadas_datuma"].dt.date == datum_szuro]
     
     # Sort the filtered DataFrame by quotation date ascending.
@@ -288,6 +299,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
