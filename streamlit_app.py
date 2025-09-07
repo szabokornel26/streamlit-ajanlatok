@@ -174,6 +174,9 @@ if check_password():
     
     df = get_data()
 
+    # "Ajanlatadas datuma" changed to datetime
+    df["Ajanlatadas_datuma"] = pd.to_datetime(df["Ajanlatadas_datuma"], errors="coerce")
+    
     # Generate a unique identifier for each row immediately after data retrieval.
     # This will be used to match notes with quotations.
     
@@ -193,7 +196,7 @@ if check_password():
     samsung_keres = st.text_input("Samsung szám:")
     projektnev_szuro = st.text_input("Projektnév:")
     valasztott_keszito = st.multiselect("Készítő(k):", options=df["Keszito"].unique(), default=None)
-    datum_szuro = st.date_input("Ajánlatadás dátum szűrő:", value=None)
+    datum_szuro = st.date_input("Dátum szűrő (egy nap vagy intervallum)")
     
     # Create a filtered DataFrame to apply user-selected filters.
     
@@ -213,14 +216,18 @@ if check_password():
     if projektnev_szuro:
         df_szurt = df_szurt[df_szurt["Projektnev"].str.contains(projektnev_szuro, case=False, na=False)]
 
+    import datetime
+
     if datum_szuro:
-        if isinstance(datum_szuro, tuple) and len(datum_szuro) == 2:
-            start, end = datum_szuro
+        if isinstance(datum_szuro, list) and len(datum_szuro) == 2:
+            # Interval
+            kezd, veg = datum_szuro
             df_szurt = df_szurt[
-                (df_szurt["Ajanlatadas_datuma"].dt.date >= start) & 
-                (df_szurt["Ajanlatadas_datuma"].dt.date <= end)
+                (df_szurt["Ajanlatadas_datuma"].dt.date >= kezd) &
+                (df_szurt["Ajanlatadas_datuma"].dt.date <= veg)
             ]
-        else:
+        elif isinstance(datum_szuro, (pd.Timestamp, datetime.date)):
+            # Specific date
             df_szurt = df_szurt[df_szurt["Ajanlatadas_datuma"].dt.date == datum_szuro]
     
     # Sort the filtered DataFrame by quotation date ascending.
@@ -281,6 +288,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
