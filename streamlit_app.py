@@ -246,13 +246,7 @@ if check_password():
     
     df_szurt = df_szurt.sort_values(by="Ajanlatadas_datuma", ascending=False, na_position="last")
 
-    # Format the 'Vegosszeg' column for display:
-    # - Add thousands separator
-    # - Show '-' for missing values
-    
-    df_szurt["Vegosszeg"] = df_szurt["Vegosszeg"].apply(
-        lambda x: f"{int(x):,}".replace(",", " ") if pd.notnull(x) else "-"
-    )
+ 
 
     # Display the total number of filtered results.
     
@@ -299,4 +293,5 @@ if check_password():
 
 else:
     st.stop()
+
 
