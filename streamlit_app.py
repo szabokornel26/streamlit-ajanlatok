@@ -212,25 +212,6 @@ if check_password():
     # Create a filtered DataFrame to apply user-selected filters.
     
     df_szurt = df.copy()
-    
-    # Slider filter "Vegosszeg" column
-    
-    if not df_szurt["Vegosszeg"].isna().all():   # csak akkor, ha vannak értékek
-        min_val = int(df_szurt["Vegosszeg"].min())
-        max_val = int(df_szurt["Vegosszeg"].max())
-    
-        val_range = st.slider(
-            "Végösszeg szűrő (HUF)",
-            min_value=min_val,
-            max_value=max_val,
-            value=(min_val, max_val),
-            step=1000
-        )
-    
-        df_szurt = df_szurt[
-            (df_szurt["Vegosszeg"] >= val_range[0]) &
-            (df_szurt["Vegosszeg"] <= val_range[1])
-        ]
 
     # Apply each filter conditionally if the user has selected any options.
     
@@ -265,6 +246,14 @@ if check_password():
     
     df_szurt = df_szurt.sort_values(by="Ajanlatadas_datuma", ascending=False, na_position="last")
 
+    # Format the 'Vegosszeg' column for display:
+    # - Add thousands separator
+    # - Show '-' for missing values
+    
+    df_szurt["Vegosszeg"] = df_szurt["Vegosszeg"].apply(
+        lambda x: f"{int(x):,}".replace(",", " ") if pd.notnull(x) else "-"
+    )
+
     # Display the total number of filtered results.
     
     st.write(f"Találatok száma: {len(df_szurt)}")
@@ -283,7 +272,7 @@ if check_password():
             "Samsung_szam": st.column_config.TextColumn("Samsung szám", disabled=True),
             "Felelos": st.column_config.TextColumn("Felelős", disabled=True),
             "Projektnev": st.column_config.TextColumn("Projekt név", disabled=True),
-            "Vegosszeg": st.column_config.NumberColumn("Végösszeg (HUF)",format=lambda x: f"{int(x):,}".replace(",", " ")),
+            "Vegosszeg": st.column_config.TextColumn("Végösszeg (HUF)", disabled=True),
             "Ajanlatkero": st.column_config.TextColumn("Ajánlatkérő", disabled=True),
             "Ajanlatadas_datuma": st.column_config.DateColumn("Ajánlatadás dátuma", disabled=True),
             "Keszito": st.column_config.TextColumn("Készítő", disabled=True),
@@ -310,16 +299,3 @@ if check_password():
 
 else:
     st.stop()
-
-
-
-
-
-
-
-
-
-
-
-
-
