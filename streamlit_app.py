@@ -192,10 +192,10 @@ if check_password():
     # - project name
     # - creator(s)
     
-    valasztott_ajanlatkero = st.multiselect("Ajánlatkérő(k):", options=df["Ajanlatkero"].unique(), default=None)
+    valasztott_ajanlatkero = st.multiselect("Ajánlatkérő(k):", options=df["Ajanlatkero"].unique(), default=None, placeholder="Válassz ajánlatkérő(ke)t")
     samsung_keres = st.text_input("Samsung szám:")
     projektnev_szuro = st.text_input("Projektnév:")
-    valasztott_keszito = st.multiselect("Készítő(k):", options=df["Keszito"].unique(), default=None)
+    valasztott_keszito = st.multiselect("Készítő(k):", options=df["Keszito"].unique(), default=None, placeholder="Válassz készítő(ke)t")
 
     
     min_date = df["Ajanlatadas_datuma"].min().date()
@@ -310,6 +310,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
