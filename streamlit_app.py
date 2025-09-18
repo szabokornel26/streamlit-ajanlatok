@@ -218,7 +218,7 @@ if check_password():
         min_value=min_vegosszeg,
         max_value=max_vegosszeg,
         value=(min_vegosszeg, max_vegosszeg),
-        step=1000,
+        step=1000000,
         format="%d"
     )
     
@@ -310,6 +310,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
