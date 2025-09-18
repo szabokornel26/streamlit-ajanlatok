@@ -214,7 +214,7 @@ if check_password():
     max_vegosszeg = int(df["Vegosszeg"].max())
     
     vegosszeg_range = st.slider(
-        "Végösszeg (HUF) szűrő",
+        "Végösszeg szűrő:",
         min_value=min_vegosszeg,
         max_value=max_vegosszeg,
         value=(min_vegosszeg, max_vegosszeg),
@@ -310,6 +310,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
