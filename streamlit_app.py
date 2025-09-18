@@ -266,7 +266,7 @@ if check_password():
             "Samsung_szam": st.column_config.TextColumn("Samsung szám", disabled=True),
             "Felelos": st.column_config.TextColumn("Felelős", disabled=True),
             "Projektnev": st.column_config.TextColumn("Projekt név", disabled=True),
-            "Vegosszeg": st.column_config.NumberColumn("Végösszeg (HUF)"disabled=True, format="%.0f", step=1, min_value=0),
+            "Vegosszeg": st.column_config.NumberColumn("Végösszeg (HUF)", disabled=True, format="%.0f", step=1, min_value=0),
             "Ajanlatkero": st.column_config.TextColumn("Ajánlatkérő", disabled=True),
             "Ajanlatadas_datuma": st.column_config.DateColumn("Ajánlatadás dátuma", disabled=True),
             "Keszito": st.column_config.TextColumn("Készítő", disabled=True),
@@ -293,6 +293,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
