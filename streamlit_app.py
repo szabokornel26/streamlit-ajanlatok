@@ -171,17 +171,6 @@ if check_password():
 
     #Background change
 
-    st.markdown("""
-        <style>
-        .stApp {
-            background-image: url("https://www.equuscs.com/wp-content/uploads/samsung-logo-on-transparent-background-free-vector.jpg");
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center top;
-        }
-        </style>
-        """, unsafe_allow_html=True)
-
     
     st.title("Kimenő ajánlatok")
 
@@ -325,6 +314,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
