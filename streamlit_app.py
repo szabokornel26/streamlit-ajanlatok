@@ -168,6 +168,21 @@ def save_changes_bulk(original_df: pd.DataFrame, edited_df: pd.DataFrame):
 # Loads the quotation data and sets up filters and editable table.
 
 if check_password():
+
+    #Background change
+
+    st.markdown("""
+        <style>
+        .stApp {
+            background-image: url("https://azure.wgp-cdn.co.uk/app-acr-journal/posts/SamsungClimateSolutionslogo.jpg?&format=webp&webp.quality=40&scale=both");
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
+    
     st.title("Kimenő ajánlatok")
 
     # Retrieve all quotation data from BigQuery.
@@ -310,6 +325,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
