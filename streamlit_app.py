@@ -175,9 +175,9 @@ if check_password():
         <style>
         .stApp {
             background-image: url("https://img.edilportale.com/profile-image/thumb2_Samsung-Electronics-Italia-3071e384-log1.gif");
-            background-size: cover;
+            background-size: contain;
             background-repeat: no-repeat;
-            background-attachment: fixed;
+            background-position: center;
         }
         </style>
         """, unsafe_allow_html=True)
@@ -325,6 +325,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
