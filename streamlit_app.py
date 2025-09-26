@@ -174,7 +174,7 @@ if check_password():
     st.markdown("""
         <style>
         .stApp {
-            background-image: url("https://icon2.cleanpng.com/20180324/cre/avdfqbz33.webp");
+            background-image: url("https://www.equuscs.com/wp-content/uploads/samsung-logo-on-transparent-background-free-vector.jpg");
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center top;
@@ -325,6 +325,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
