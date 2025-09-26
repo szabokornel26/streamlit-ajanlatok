@@ -174,7 +174,7 @@ if check_password():
     st.markdown("""
         <style>
         .stApp {
-            background-image: url("https://azure.wgp-cdn.co.uk/app-acr-journal/posts/SamsungClimateSolutionslogo.jpg?&format=webp&webp.quality=40&scale=both");
+            background-image: url("https://www.klimatizace-samsung.eu/uploads/inq/files/1610449233_logoCS.png");
             background-size: cover;
             background-repeat: no-repeat;
             background-attachment: fixed;
@@ -325,6 +325,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
