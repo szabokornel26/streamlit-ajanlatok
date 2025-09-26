@@ -174,7 +174,7 @@ if check_password():
     st.markdown("""
         <style>
         .stApp {
-            background-image: url("https://www.klimatizace-samsung.eu/uploads/inq/files/1610449233_logoCS.png");
+            background-image: url("https://img.edilportale.com/profile-image/thumb2_Samsung-Electronics-Italia-3071e384-log1.gif");
             background-size: cover;
             background-repeat: no-repeat;
             background-attachment: fixed;
@@ -325,6 +325,7 @@ if check_password():
 
 else:
     st.stop()
+
 
 
 
