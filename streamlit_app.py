@@ -9,7 +9,9 @@ import json
 import pandas as pd
 import streamlit as st
 from google.cloud import bigquery
-from google.oauth2 import service_account
+from google.oauth2 import service_account # type: ignore
+from typing import List
+
 
 # --- Authentication Setup ---
 # Load service account credentials from Streamlit secrets
@@ -208,7 +210,7 @@ if check_password():
     # - project name
     # - creator(s)
 
-    valasztott_ajanlatkero = st.multiselect(
+    valasztott_ajanlatkero: List[str] = st.multiselect(
         "Ajánlatkérő(k):",
         options=df["Ajanlatkero"].unique(),
         default=None,
@@ -216,7 +218,7 @@ if check_password():
     )
     samsung_keres = st.text_input("Samsung szám:")
     projektnev_szuro = st.text_input("Projektnév:")
-    valasztott_keszito = st.multiselect(
+    valasztott_keszito: List[str] = st.multiselect(
         "Készítő(k):",
         options=df["Keszito"].unique(),
         default=None,
