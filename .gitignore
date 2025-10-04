@@ -3,3 +3,8 @@ __pycache__/
 .env
 .secrets
 .DS_Store
+
+htmlcov/
+.coverage
+pytestdebug.log
+.mypy_cache/
