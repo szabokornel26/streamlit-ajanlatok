@@ -3,3 +3,6 @@ pandas==2.3.1
 google-auth==2.29.0
 google-auth-oauthlib==1.2.2
 google-cloud-bigquery[pandas]==3.20.1
+ruff
+mypy==1.4.1
+pytest==8.4.2

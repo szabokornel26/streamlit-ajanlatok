@@ -25,7 +25,7 @@ client = bigquery.Client(credentials=credentials, project=gcp_key_dict["project_
 # --- Streamlit Page Configuration ---
 # Configure the layout to use full width for better readability.
 
-st.set_page_config(layout="wide")
+st.set_page_config(page_title="Sales Dashboard", page_icon="📈", layout="wide")
 
 # --- Simple Password Protection ---
 # Require the user to enter the correct password in the sidebar
@@ -184,167 +184,173 @@ def save_changes_bulk(original_df: pd.DataFrame, edited_df: pd.DataFrame):
 # Only displayed if the user enters the correct password.
 # Loads the quotation data and sets up filters and editable table.
 
-if check_password():
-    # Background change
 
-    st.title("Kimenő ajánlatok")
+def main():
 
-    # Retrieve all quotation data from BigQuery.
+    if check_password():
+        # Title change
 
-    df = get_data()
+        st.title("Kimenő ajánlatok")
 
-    # "Ajanlatadas datuma" changed to datetime
-    df["Ajanlatadas_datuma"] = pd.to_datetime(df["Ajanlatadas_datuma"], errors="coerce")
+        # Retrieve all quotation data from BigQuery.
 
-    # Generate a unique identifier for each row immediately after data retrieval.
-    # This will be used to match notes with quotations.
+        df = get_data()
 
-    df["Egyedi_azonosito"] = df.apply(
-        lambda row: generate_unique_id(row["Projektnev"], row["Ajanlatkero"]), axis=1
-    )
+        # "Ajanlatadas datuma" changed to datetime
+        df["Ajanlatadas_datuma"] = pd.to_datetime(df["Ajanlatadas_datuma"], errors="coerce")
 
-    # --- Filters ---
-    # Allow the user to filter quotations by:
-    # - client(s)
-    # - Samsung number
-    # - project name
-    # - creator(s)
+        # Generate a unique identifier for each row immediately after data retrieval.
+        # This will be used to match notes with quotations.
 
-    valasztott_ajanlatkero: List[str] = st.multiselect(
-        "Ajánlatkérő(k):",
-        options=df["Ajanlatkero"].unique(),
-        default=None,
-        placeholder="Válassz ajánlatkérő(ke)t!",
-    )
-    samsung_keres = st.text_input("Samsung szám:")
-    projektnev_szuro = st.text_input("Projektnév:")
-    valasztott_keszito: List[str] = st.multiselect(
-        "Készítő(k):",
-        options=df["Keszito"].unique(),
-        default=None,
-        placeholder="Válassz készítő(ke)t!",
-    )
+        df["Egyedi_azonosito"] = df.apply(
+            lambda row: generate_unique_id(row["Projektnev"], row["Ajanlatkero"]), axis=1
+        )
 
-    min_date = df["Ajanlatadas_datuma"].min().date()
-    max_date = df["Ajanlatadas_datuma"].max().date()
+        # --- Filters ---
+        # Allow the user to filter quotations by:
+        # - client(s)
+        # - Samsung number
+        # - project name
+        # - creator(s)
 
-    datum_szuro = st.date_input(
-        "Ajánlatadás dátum szűrő:",
-        value=(min_date, max_date),  # tuple -> interval
-        min_value=min_date,
-        max_value=max_date,
-    )
+        valasztott_ajanlatkero: List[str] = st.multiselect(
+            "Ajánlatkérő(k):",
+            options=df["Ajanlatkero"].unique(),
+            default=None,
+            placeholder="Válassz ajánlatkérő(ke)t!",
+        )
+        samsung_keres = st.text_input("Samsung szám:")
+        projektnev_szuro = st.text_input("Projektnév:")
+        valasztott_keszito: List[str] = st.multiselect(
+            "Készítő(k):",
+            options=df["Keszito"].unique(),
+            default=None,
+            placeholder="Válassz készítő(ke)t!",
+        )
 
-    min_vegosszeg = int(df["Vegosszeg"].min())
-    max_vegosszeg = int(df["Vegosszeg"].max())
+        min_date = df["Ajanlatadas_datuma"].min().date()
+        max_date = df["Ajanlatadas_datuma"].max().date()
 
-    vegosszeg_range = st.slider(
-        "Végösszeg szűrő:",
-        min_value=min_vegosszeg,
-        max_value=max_vegosszeg,
-        value=(min_vegosszeg, max_vegosszeg),
-        step=1000000,
-        format="%d",
-    )
+        datum_szuro = st.date_input(
+            "Ajánlatadás dátum szűrő:",
+            value=(min_date, max_date),  # tuple -> interval
+            min_value=min_date,
+            max_value=max_date,
+        )
 
-    # Create a filtered DataFrame to apply user-selected filters.
+        min_vegosszeg = int(df["Vegosszeg"].min())
+        max_vegosszeg = int(df["Vegosszeg"].max())
 
-    df_szurt = df.copy()
+        vegosszeg_range = st.slider(
+            "Végösszeg szűrő:",
+            min_value=min_vegosszeg,
+            max_value=max_vegosszeg,
+            value=(min_vegosszeg, max_vegosszeg),
+            step=1000000,
+            format="%d",
+        )
 
-    # Apply each filter conditionally if the user has selected any options.
+        # Create a filtered DataFrame to apply user-selected filters.
 
-    if valasztott_keszito:
-        df_szurt = df_szurt[df_szurt["Keszito"].isin(valasztott_keszito)]
+        df_szurt = df.copy()
 
-    if valasztott_ajanlatkero:
-        df_szurt = df_szurt[df_szurt["Ajanlatkero"].isin(valasztott_ajanlatkero)]
+        # Apply each filter conditionally if the user has selected any options.
 
-    if samsung_keres:
-        df_szurt = df_szurt[
-            df_szurt["Samsung_szam"].str.contains(samsung_keres, case=False, na=False)
-        ]
+        if valasztott_keszito:
+            df_szurt = df_szurt[df_szurt["Keszito"].isin(valasztott_keszito)]
 
-    if projektnev_szuro:
-        df_szurt = df_szurt[
-            df_szurt["Projektnev"].str.contains(projektnev_szuro, case=False, na=False)
-        ]
+        if valasztott_ajanlatkero:
+            df_szurt = df_szurt[df_szurt["Ajanlatkero"].isin(valasztott_ajanlatkero)]
 
-    if vegosszeg_range:
-        lower, upper = vegosszeg_range
-        df_szurt = df_szurt[
-            (df_szurt["Vegosszeg"] >= lower) & (df_szurt["Vegosszeg"] <= upper)
-        ]
-
-    if datum_szuro:
-        if isinstance(datum_szuro, (list, tuple)) and len(datum_szuro) == 2:
-            start, end = datum_szuro
+        if samsung_keres:
             df_szurt = df_szurt[
-                (df_szurt["Ajanlatadas_datuma"].dt.date >= start)
-                & (df_szurt["Ajanlatadas_datuma"].dt.date <= end)
+                df_szurt["Samsung_szam"].str.contains(samsung_keres, case=False, na=False)
             ]
-        else:
-            df_szurt = df_szurt[df_szurt["Ajanlatadas_datuma"].dt.date == datum_szuro]
 
-    # Sort the filtered DataFrame by quotation date ascending.
-    # Null dates are placed first.
+        if projektnev_szuro:
+            df_szurt = df_szurt[
+                df_szurt["Projektnev"].str.contains(projektnev_szuro, case=False, na=False)
+            ]
 
-    df_szurt = df_szurt.sort_values(
-        by="Ajanlatadas_datuma", ascending=False, na_position="last"
-    )
+        if vegosszeg_range:
+            lower, upper = vegosszeg_range
+            df_szurt = df_szurt[
+                (df_szurt["Vegosszeg"] >= lower) & (df_szurt["Vegosszeg"] <= upper)
+            ]
 
-    # Display the total number of filtered results.
+        if datum_szuro:
+            if isinstance(datum_szuro, (list, tuple)) and len(datum_szuro) == 2:
+                start, end = datum_szuro
+                df_szurt = df_szurt[
+                    (df_szurt["Ajanlatadas_datuma"].dt.date >= start)
+                    & (df_szurt["Ajanlatadas_datuma"].dt.date <= end)
+                ]
+            else:
+                df_szurt = df_szurt[df_szurt["Ajanlatadas_datuma"].dt.date == datum_szuro]
 
-    st.write(f"Találatok száma: {len(df_szurt)}")
+        # Sort the filtered DataFrame by quotation date ascending.
+        # Null dates are placed first.
 
-    # --- Editable Table ---
-    # Use Streamlit's data_editor to allow editing of the 'Megjegyzes' column.
-    # All other columns are read-only.
+        df_szurt = df_szurt.sort_values(
+            by="Ajanlatadas_datuma", ascending=False, na_position="last"
+        )
 
-    edited_df = st.data_editor(
-        df_szurt,
-        use_container_width=True,
-        hide_index=True,
-        column_config={
-            "Egyedi_azonosito": st.column_config.TextColumn(
-                "Egyedi azonosító", disabled=True
-            ),
-            "Projekt_azonosito": st.column_config.TextColumn(
-                "Projekt azonosító", disabled=True
-            ),
-            "Samsung_szam": st.column_config.TextColumn("Samsung szám", disabled=True),
-            "Felelos": st.column_config.TextColumn("Felelős", disabled=True),
-            "Projektnev": st.column_config.TextColumn("Projekt név", disabled=True),
-            "Vegosszeg": st.column_config.NumberColumn(
-                "Végösszeg (HUF)", disabled=True, format="accounting", step=1
-            ),
-            "Ajanlatkero": st.column_config.TextColumn("Ajánlatkérő", disabled=True),
-            "Ajanlatadas_datuma": st.column_config.DateColumn(
-                "Ajánlatadás dátuma", disabled=True
-            ),
-            "Keszito": st.column_config.TextColumn("Készítő", disabled=True),
-            "Megjegyzes": st.column_config.TextColumn(
-                "Megjegyzés",
-                help="Szerkeszthető mező, csak ahol létezik egyedi azonosító",
-            ),
-        },
-    )
+        # Display the total number of filtered results.
 
-    # --- Save Button ---
-    # When clicked, compare edited data with original,
-    # and save changes to BigQuery using the bulk save function.
-    # If an error occurs during saving, display an error message.
+        st.write(f"Találatok száma: {len(df_szurt)}")
 
-    if st.button("Megjegyzések mentése"):
-        df_for_compare = df_szurt.copy()
-        edited_for_save = edited_df.copy()
+        # --- Editable Table ---
+        # Use Streamlit's data_editor to allow editing of the 'Megjegyzes' column.
+        # All other columns are read-only.
 
-        try:
-            save_changes_bulk(df_for_compare, edited_for_save)
-            st.rerun()
-        except Exception as e:
-            st.error(f"Hiba mentés közben: {e}")
+        edited_df = st.data_editor(
+            df_szurt,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Egyedi_azonosito": st.column_config.TextColumn(
+                    "Egyedi azonosító", disabled=True
+                ),
+                "Projekt_azonosito": st.column_config.TextColumn(
+                    "Projekt azonosító", disabled=True
+                ),
+                "Samsung_szam": st.column_config.TextColumn("Samsung szám", disabled=True),
+                "Felelos": st.column_config.TextColumn("Felelős", disabled=True),
+                "Projektnev": st.column_config.TextColumn("Projekt név", disabled=True),
+                "Vegosszeg": st.column_config.NumberColumn(
+                    "Végösszeg (HUF)", disabled=True, format="accounting", step=1
+                ),
+                "Ajanlatkero": st.column_config.TextColumn("Ajánlatkérő", disabled=True),
+                "Ajanlatadas_datuma": st.column_config.DateColumn(
+                    "Ajánlatadás dátuma", disabled=True
+                ),
+                "Keszito": st.column_config.TextColumn("Készítő", disabled=True),
+                "Megjegyzes": st.column_config.TextColumn(
+                    "Megjegyzés",
+                    help="Szerkeszthető mező, csak ahol létezik egyedi azonosító",
+                ),
+            },
+        )
 
-# Stop execution if the password check failed.
+        # --- Save Button ---
+        # When clicked, compare edited data with original,
+        # and save changes to BigQuery using the bulk save function.
+        # If an error occurs during saving, display an error message.
 
-else:
-    st.stop()
+        if st.button("Megjegyzések mentése"):
+            df_for_compare = df_szurt.copy()
+            edited_for_save = edited_df.copy()
+
+            try:
+                save_changes_bulk(df_for_compare, edited_for_save)
+                st.rerun()
+            except Exception as e:
+                st.error(f"Hiba mentés közben: {e}")
+
+    # Stop execution if the password check failed.
+
+    else:
+        st.stop()
+
+if __name__ == "__main__":
+    main()
